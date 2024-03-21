@@ -2,47 +2,32 @@ package lab2
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
-	"testing"
 
-	"github.com/stretchr/testify/assert"
+	. "gopkg.in/check.v1"
 )
 
-func TestComputeHandler(t *testing.T) {
-	b := bytes.NewBuffer(make([]byte, 0))
-
+func (s *MySuite) TestComputeHandler(c *C) {
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	
 	handler := ComputeHandler{
-		Input:  strings.NewReader("- 6 2"),
-		Output: b,
+		Input:  strings.NewReader("* 5 2"),
+		Output: buffer,
 	}
 	err := handler.Compute()
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, b.String(), "4")
+	c.Assert(err, Equals, nil)
+	c.Assert(buffer.String(), Equals, "10")
 }
 
-func TestComputeHandlerHard(t *testing.T) {
-	b := bytes.NewBuffer(make([]byte, 0))
-
+func (s *MySuite) TestComputeHandlerError(c *C) {
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	
 	handler := ComputeHandler{
-		Input:  strings.NewReader("+ 5 - 6 7"),
-		Output: b,
+		Input:  strings.NewReader("- 5 5 6"),
+		Output: buffer,
 	}
 	err := handler.Compute()
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, b.String(), "4")
-}
-
-func TestComputeHandlerError(t *testing.T) {
-	b := bytes.NewBuffer(make([]byte, 0))
-
-	handler := ComputeHandler{
-		Input:  strings.NewReader("1 2 3"),
-		Output: b,
-	}
-	err := handler.Compute()
-
-	assert.Equal(t, err, fmt.Errorf("Error. Missing arguments or many operators"))
+	c.Assert(err, ErrorMatches, "Incorrect ratio of numbers and operators")
 }
