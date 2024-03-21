@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
+	//"log"
 	"os"
 	"strings"
 
