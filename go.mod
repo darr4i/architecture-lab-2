@@ -1,4 +1,4 @@
-module github.com/AlexShopiak/kpi-lab2
+module github.com/darr4i/architecture-lab-2
 
 go 1.20
 
