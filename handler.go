@@ -1,10 +1,6 @@
 package lab2
 
-import (
-	"bytes"
-	"io"
-	"strconv"
-)
+import "io"
 
 type ComputeHandler struct {
 	Input  io.Reader
@@ -12,18 +8,20 @@ type ComputeHandler struct {
 }
 
 func (ch *ComputeHandler) Compute() error {
-	bufRead := new(bytes.Buffer)
-	_, err := io.Copy(bufRead, ch.Input)
+	data := make([]byte, 0)
+	buffer := make([]byte, 8)
+	for {
+		n, err := ch.Input.Read(buffer)
+		data = append(data, buffer[:n]...)
+		if err == io.EOF {
+			break
+		}
+	}
+	str := string(data)
+	res, err := CalculatePrefix(str)
 	if err != nil {
 		return err
 	}
-
-	input := bufRead.String()
-
-	res, err := CalculatePrefix(input)
-	if err != nil {
-		return err
-	}
-	ch.Output.Write([]byte(strconv.FormatInt(int64(res), 10)))
+	ch.Output.Write([]byte(res))
 	return nil
 }
