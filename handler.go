@@ -1,12 +1,29 @@
 package lab2
 
-// ComputeHandler should be constructed with input io.Reader and output io.Writer.
-// Its Compute() method should read the expression from input and write the computed result to the output.
+import (
+	"bytes"
+	"io"
+	"strconv"
+)
+
 type ComputeHandler struct {
-	// TODO: Add necessary fields.
+	Input  io.Reader
+	Output io.Writer
 }
 
 func (ch *ComputeHandler) Compute() error {
-	// TODO: Implement.
+	bufRead := new(bytes.Buffer)
+	_, err := io.Copy(bufRead, ch.Input)
+	if err != nil {
+		return err
+	}
+
+	input := bufRead.String()
+
+	res, err := CalculatePrefix(input)
+	if err != nil {
+		return err
+	}
+	ch.Output.Write([]byte(strconv.FormatInt(int64(res), 10)))
 	return nil
 }
