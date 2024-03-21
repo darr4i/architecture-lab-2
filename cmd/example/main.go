@@ -12,65 +12,55 @@ import (
 )
 
 var (
-	inputExpression = flag.String("e", "", "Expression to compute")
-	inputFile       = flag.String("f", "", "File with expression to compute")
-	outputFile      = flag.String("o", "", "File to store computed expression")
+	inputFromStdin = flag.String("e", "", "Expression from stdin")
+	inputFromFile = flag.String("f", "", "Expression from file")
+	outputToFile = flag.String("o", "", "Result to file")
 )
 
 func main() {
 	flag.Parse()
 
-	if *inputExpression == "" && *inputFile == "" {
-		log.Fatal("no expression provided. use -e \"{expression}\" or -f {file with expression}")
+	var input io.Reader = nil
+	var output = os.Stdout
+
+	if *inputFromStdin != "" {
+		input = strings.NewReader(*inputFromStdin)
 	}
 
-	if *inputExpression != "" && *inputFile != "" {
-		log.Fatal("flags -e and -f can't both be used")
-	}
-
-	var reader io.Reader
-
-	if *inputExpression != "" {
-		reader = strings.NewReader(*inputExpression)
-	} else {
-		file, err := os.Open(*inputFile)
+	if *inputFromFile != "" {
+		file, err := os.Open(*inputFromFile)
 		if err != nil {
-			log.Fatal("no such file")
+			os.Stderr.WriteString("Error with input from file")
+			return
 		}
-		reader = file
 		defer file.Close()
+		input = file
 	}
 
-	var writer io.Writer
-
-	if *outputFile != "" {
-		file, err := os.Create(*outputFile)
+	if *outputToFile != "" {
+		file, err := os.Create(*outputToFile)
 		if err != nil {
-			log.Fatal("something went wrong while creating file")
+			os.Stderr.WriteString("Error with output to file")
+			return
 		}
-
-		writer = file
 		defer file.Close()
-	} else {
-		writer = &Writer{}
+		output = file
+	}
+
+	if input == nil {
+		os.Stderr.WriteString("Error with input, got <nil>")
+		return
 	}
 
 	handler := &lab2.ComputeHandler{
-		Input:  reader,
-		Output: writer,
+		Input: input,
+		Output: output,
 	}
 
 	err := handler.Compute()
-
+	
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println(err) 
+		return
 	}
-
-}
-
-type Writer struct{}
-
-func (w *Writer) Write(data []byte) (n int, err error) {
-	fmt.Println(string(data))
-	return len(data), nil
 }
